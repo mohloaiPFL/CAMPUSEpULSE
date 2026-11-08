@@ -1,7 +1,7 @@
 // ha re ya e sebelisa 
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -18,4 +18,6 @@ const firebaseApp = firebaseConfigured
   : null;
 
 export const auth = firebaseApp ? getAuth(firebaseApp) : null;
-export const db = firebaseApp ? getFirestore(firebaseApp) : null;
+export const db = firebaseApp
+  ? initializeFirestore(firebaseApp, { experimentalAutoDetectLongPolling: true })
+  : null;

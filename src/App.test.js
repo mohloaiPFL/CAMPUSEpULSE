@@ -69,5 +69,10 @@ test('requires a student ID containing one to nine digits', () => {
 test('explains how to fix Firebase Authentication configuration errors', () => {
   expect(getFirebaseErrorMessage({ code: 'auth/configuration-not-found' })).toMatch(/enable Anonymous/i);
   expect(getFirebaseErrorMessage({ code: 'auth/operation-not-allowed' })).toMatch(/same Firebase project as Firestore/i);
-  expect(getFirebaseErrorMessage({ code: 'auth/unauthorized-domain' })).toMatch(/add localhost/i);
+  expect(getFirebaseErrorMessage({ code: 'auth/unauthorized-domain' })).toMatch(/domain used to open this site/i);
+});
+
+test('explains how to recover from a temporary Firebase network failure', () => {
+  expect(getFirebaseErrorMessage({ code: 'unavailable' })).toMatch(/switch between Wi-Fi and mobile data/i);
+  expect(getFirebaseErrorMessage({ code: 'auth/network-request-failed' })).toMatch(/form details are still here/i);
 });

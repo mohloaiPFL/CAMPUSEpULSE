@@ -20,7 +20,13 @@ export function getFirebaseErrorMessage(error) {
     return "Firebase Authentication is not enabled for this project. In Firebase Console, open Authentication → Sign-in method, enable Anonymous, and confirm this app uses the same Firebase project as Firestore.";
   }
   if (error?.code === "auth/unauthorized-domain") {
-    return "This website domain is not authorized for Firebase Authentication. In Firebase Console, open Authentication → Settings → Authorized domains and add localhost.";
+    return "This website address is not authorized for Firebase Authentication. In Firebase Console, open Authentication → Settings → Authorized domains and add the domain used to open this site.";
+  }
+  if (["unavailable", "deadline-exceeded", "auth/network-request-failed"].includes(error?.code)) {
+    return "The request could not reach the service. Check your internet connection, switch between Wi-Fi and mobile data, then send it again. Your form details are still here.";
+  }
+  if (error?.code === "permission-denied") {
+    return "The request was blocked by Firebase security settings. Please contact the university support team.";
   }
   return error?.message || "A Firebase error occurred. Please try again.";
 }
