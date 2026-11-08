@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /requests/{requestId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function ownsRequest() {
+        return isSignedIn() && resource.data.ownerUid == request.auth.uid;
+      }
+
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.status == "Pending"
+        && request.resource.data.keys().hasAll([
+          "studentName", "studentId", "email", "serviceId", "serviceName",
+          "department", "description", "requestDate", "ownerUid", "status", "createdAt"
+        ])
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 20
+        && request.resource.data.studentName.matches("^[\\p{L}]+( [\\p{L}]+)*$")
+        && request.resource.data.studentId is string
+        && request.resource.data.studentId.matches("^[0-9]{1,9}$")
+        && request.resource.data.email is string
+        && request.resource.data.email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
+        && request.resource.data.serviceId is string
+        && request.resource.data.serviceName is string
+        && request.resource.data.department is string
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.requestDate is string
+        && request.resource.data.createdAt is timestamp;
+
+      allow read, delete: if ownsRequest();
+
+      allow update: if ownsRequest()
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
+        && request.resource.data.status in ["Pending", "In Progress", "Completed", "Rejected"];
+    }
+  }
+}

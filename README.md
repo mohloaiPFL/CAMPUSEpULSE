@@ -1,70 +1,50 @@
-# Getting Started with Create React App
+# Limkokwing Student Services
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A responsive React portal for browsing university services and submitting and managing student service requests. Requests are stored in Firebase Cloud Firestore and tied to an anonymous Firebase Authentication session so a student's records are not visible to other portal users.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Home page and searchable catalogue of six student services
+- Dynamic service details and request routes, nested React Router layout, and a not-found page
+- Validated request form and confirmation summary
+- Firestore create, realtime read, status update, and delete
+- Owner-scoped Firestore rules and anonymous sign-in
+- Responsive layouts, accessible labels, loading and error states
 
-### `npm start`
+## Run locally
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. Install Node.js (LTS).
+2. From this directory, install dependencies and start the app:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+   ```sh
+   npm install
+   npm start
+   ```
 
-### `npm test`
+3. Configure Firebase as described below. The UI can be browsed without Firebase configuration, but request submission and the requests page will show an explicit setup error until Firebase is connected.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Firebase setup
 
-### `npm run build`
+1. Create a Firebase project and register a Web app.
+2. In Firebase Console, enable **Authentication → Sign-in method → Anonymous**.
+3. Create a **Cloud Firestore** database.
+4. Copy `.env.example` to `.env.local` and replace each placeholder with the Firebase Web app configuration values. Create React App reads `REACT_APP_` variables at build time; restart `npm start` after editing the file.
+5. Publish the rules in `firestore.rules` to the project's Firestore database. These rules restrict read, update, and delete access to the anonymous account that created each request. Do not replace them with open test-mode rules in a deployed project.
+6. Start the app and submit a test request. The requests query filters by the owner and sorts results in the app, so it does not require a composite Firestore index.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The public Firebase Web configuration is intended for client applications, but it does not replace security rules. The rules are the access-control boundary. Anonymous identity is kept by Firebase in the current browser profile; it is not an institution-wide student login. For production use, integrate the university's authenticated identity provider and map authenticated students to their verified student records.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Available scripts
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- `npm start` — start the development server.
+- `npm test -- --watchAll=false` — run tests once.
+- `npm run build` — create a production build.
 
-### `npm run eject`
+## Project structure
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `src/Portal.jsx` — layout, routes, pages, form, and reusable UI components
+- `src/Data/Services.js` — service catalogue
+- `src/services/requestService.js` — Firestore request operations
+- `src/lib/Firebase.js` — Firebase app, Auth, and Firestore configuration
+- `src/Portal.css` — portal styles and responsive layouts
+- `firestore.rules` — per-owner database access rules
