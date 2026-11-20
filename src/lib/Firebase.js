@@ -13,6 +13,7 @@ const firebaseConfig = {
 };
 
 export const firebaseConfigured = Object.values(firebaseConfig).every(Boolean);
+export const firebaseProjectId = firebaseConfig.projectId;
 const firebaseApp = firebaseConfigured
   ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig))
   : null;

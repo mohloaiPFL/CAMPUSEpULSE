@@ -2,43 +2,290 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /requests/{requestId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-      function ownsRequest() {
-        return isSignedIn() && resource.data.ownerUid == request.auth.uid;
-      }
+    function isVerifiedGoogleUser() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider == "google.com"
+        && request.auth.token.email_verified == true;
+    }
 
-      allow create: if isSignedIn()
-        && request.resource.data.ownerUid == request.auth.uid
+    function isAdmin() {
+      return isVerifiedGoogleUser()
+        && request.auth.token.email == "mohloaiqamo@gmail.com";
+    }
+
+    function hasApprovedRegistration() {
+      return isVerifiedGoogleUser()
+        && exists(/databases/$(database)/documents/registrations/$(request.auth.uid))
+        && get(/databases/$(database)/documents/registrations/$(request.auth.uid)).data.status == "Approved";
+    }
+
+    function ownsRequest() {
+      return isSignedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    function validRegistrationData() {
+      return request.resource.data.keys().hasOnly([
+          "firstName", "surname", "displayName", "faculty", "course", "level",
+          "sponsorship", "gender", "email",
+          "phoneNumber", "address", "kinName", "kinRelationship",
+          "kinPhoneNumber", "status", "createdAt", "sponsorDetails", "residence"
+        ])
+        && request.resource.data.keys().hasAll([
+          "firstName", "surname", "displayName", "faculty", "course", "level",
+          "sponsorship", "gender", "email",
+          "phoneNumber", "address", "kinName", "kinRelationship",
+          "kinPhoneNumber", "status", "createdAt"
+        ])
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() >= 1
+        && request.resource.data.firstName.size() <= 49
+        && request.resource.data.firstName.matches("^[\\p{L}]+([ '’-][\\p{L}]+)*$")
+        && request.resource.data.surname is string
+        && request.resource.data.surname.size() >= 1
+        && request.resource.data.surname.size() <= 49
+        && request.resource.data.surname.matches("^[\\p{L}]+([ '’-][\\p{L}]+)*$")
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 3
+        && request.resource.data.displayName.size() <= 99
+        && request.resource.data.displayName == request.resource.data.firstName + " " + request.resource.data.surname
+        && request.resource.data.faculty in [
+          "Faculty of Design and Innovation",
+          "Faculty of Information Communication Technology",
+          "Faculty of Communication, Media & Broadcasting",
+          "Faculty of Business Management and Globalization",
+          "Faculty of Creativity in Tourism and Hospitality",
+          "Faculty of Architecture and Built Environment"
+        ]
+        && request.resource.data.course is string
+        && request.resource.data.course.size() >= 10
+        && request.resource.data.course.size() <= 35
+        && request.resource.data.course.matches("^[\\p{L}]+( +[\\p{L}]+)*$")
+        && request.resource.data.level in ["Diploma", "Degree", "TVET"]
+        && request.resource.data.sponsorship in ["Self-sponsored", "NMDS", "Other"]
+        && request.resource.data.gender in ["Female", "Male"]
+        && (
+          (request.resource.data.sponsorship == "Other"
+            && request.resource.data.sponsorDetails is string
+            && request.resource.data.sponsorDetails.size() >= 2
+            && request.resource.data.sponsorDetails.size() <= 100)
+          || (request.resource.data.sponsorship != "Other"
+            && !request.resource.data.keys().hasAny(["sponsorDetails"]))
+        )
+        && (
+          (request.resource.data.gender == "Female"
+            && request.resource.data.residence in ["On campus", "Off campus"])
+          || (request.resource.data.gender == "Male"
+            && !request.resource.data.keys().hasAny(["residence"]))
+        )
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.phoneNumber is string
+        && request.resource.data.phoneNumber.size() >= 7
+        && request.resource.data.phoneNumber.size() <= 20
+        && request.resource.data.phoneNumber.matches("^\\+?[0-9][0-9 ()-]*$")
+        && request.resource.data.address is string
+        && request.resource.data.address.size() >= 5
+        && request.resource.data.address.size() <= 300
+        && request.resource.data.kinName is string
+        && request.resource.data.kinName.size() >= 2
+        && request.resource.data.kinName.size() <= 100
+        && request.resource.data.kinName.matches("^[\\p{L}]+([ '’-][\\p{L}]+)*$")
+        && request.resource.data.kinRelationship is string
+        && request.resource.data.kinRelationship.size() >= 2
+        && request.resource.data.kinRelationship.size() <= 50
+        && request.resource.data.kinRelationship.matches("^[\\p{L}]+([ '’-][\\p{L}]+)*$")
+        && request.resource.data.kinPhoneNumber is string
+        && request.resource.data.kinPhoneNumber.size() >= 7
+        && request.resource.data.kinPhoneNumber.size() <= 20
+        && request.resource.data.kinPhoneNumber.matches("^\\+?[0-9][0-9 ()-]*$")
         && request.resource.data.status == "Pending"
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    match /registrations/{studentUid} {
+      allow create: if isVerifiedGoogleUser()
+        && request.auth.uid == studentUid
+        && validRegistrationData();
+
+      allow get: if (isSignedIn() && request.auth.uid == studentUid) || isAdmin();
+      allow list: if isAdmin();
+
+      allow update: if (
+          isVerifiedGoogleUser()
+          && request.auth.uid == studentUid
+          && resource.data.status == "Rejected"
+          && validRegistrationData()
+        )
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "studentId"])
+          && (
+            (request.resource.data.status == "Rejected"
+              && !request.resource.data.diff(resource.data).affectedKeys().hasAny(["studentId"]))
+            || (request.resource.data.status == "Approved"
+              && request.resource.data.studentId.matches("^901019[0-9]{3}$")
+              && existsAfter(/databases/$(database)/documents/studentIdAllocations/$(request.resource.data.studentId))
+              && getAfter(/databases/$(database)/documents/studentIdAllocations/$(request.resource.data.studentId)).data.ownerUid == studentUid)
+          ));
+      allow delete: if isAdmin();
+    }
+
+    match /studentIdAllocations/{studentId} {
+      allow get: if isAdmin();
+      allow create: if isAdmin()
+        && studentId.matches("^901019[0-9]{3}$")
+        && request.resource.data.keys().hasOnly(["ownerUid", "createdAt"])
+        && request.resource.data.keys().hasAll(["ownerUid", "createdAt"])
+        && request.resource.data.ownerUid is string
+        && request.resource.data.createdAt is timestamp;
+      allow delete: if isAdmin();
+    }
+
+    match /requests/{requestId} {
+      allow create: if hasApprovedRegistration()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.studentName == get(/databases/$(database)/documents/registrations/$(request.auth.uid)).data.displayName
+        && request.resource.data.studentId == get(/databases/$(database)/documents/registrations/$(request.auth.uid)).data.studentId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == "Pending"
+        && request.resource.data.keys().hasOnly([
+          "studentName", "studentId", "email", "serviceId", "serviceName",
+          "department", "description", "requestDate", "ownerUid", "status", "createdAt",
+          "paymentMethod", "paymentAmount", "paymentStatus", "course"
+        ])
         && request.resource.data.keys().hasAll([
           "studentName", "studentId", "email", "serviceId", "serviceName",
           "department", "description", "requestDate", "ownerUid", "status", "createdAt"
         ])
-        && request.resource.data.studentName is string
-        && request.resource.data.studentName.size() <= 20
-        && request.resource.data.studentName.matches("^[\\p{L}]+( [\\p{L}]+)*$")
-        && request.resource.data.studentId is string
-        && request.resource.data.studentId.matches("^[0-9]{1,9}$")
-        && request.resource.data.email is string
-        && request.resource.data.email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
         && request.resource.data.serviceId is string
         && request.resource.data.serviceName is string
         && request.resource.data.department is string
         && request.resource.data.description is string
         && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 1000
         && request.resource.data.requestDate is string
-        && request.resource.data.createdAt is timestamp;
+        && request.resource.data.createdAt is timestamp
+        && (
+          (
+            request.resource.data.serviceId == "transcript"
+            && request.resource.data.course is string
+            && request.resource.data.course.size() >= 10
+            && request.resource.data.course.size() <= 35
+            && request.resource.data.course.matches("^[\\p{L}]+( +[\\p{L}]+)*$")
+          )
+          || (
+            request.resource.data.serviceId != "transcript"
+            && !request.resource.data.keys().hasAny(["course"])
+          )
+        )
+        && (
+          (
+            request.resource.data.serviceId == "student-id"
+            && request.resource.data.keys().hasAll(["paymentMethod", "paymentAmount", "paymentStatus"])
+            && request.resource.data.paymentMethod in [
+              "M-Pesa", "EcoCash", "CPay", "Cash", "Debit/Credit Card"
+            ]
+            && request.resource.data.paymentAmount == 250
+            && request.resource.data.paymentStatus == "Demo only - not charged"
+          )
+          || (
+            request.resource.data.serviceId != "student-id"
+            && !request.resource.data.keys().hasAny(["paymentMethod", "paymentAmount", "paymentStatus"])
+          )
+        );
 
-      allow read, delete: if ownsRequest();
-
-      allow update: if ownsRequest()
-        && request.resource.data.ownerUid == resource.data.ownerUid
+      allow read: if ownsRequest() || isAdmin();
+      allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
-        && request.resource.data.status in ["Pending", "In Progress", "Completed", "Rejected"];
+        && request.resource.data.status in [
+          "Pending", "Approved", "In Progress", "Completed", "Rejected"
+        ];
+      allow delete: if isAdmin() || (ownsRequest() && resource.data.status == "Pending");
+    }
+
+    match /activityLogs/{activityId} {
+      function validActivityShape() {
+        return request.resource.data.keys().hasOnly([
+            "activityType", "actorEmail", "actorUid", "createdAt", "newStatus",
+            "ownerUid", "previousStatus", "recordLabel", "targetId", "targetType"
+          ])
+          && request.resource.data.keys().hasAll([
+            "activityType", "actorEmail", "actorUid", "createdAt", "newStatus",
+            "ownerUid", "previousStatus", "recordLabel", "targetId", "targetType"
+          ])
+          && request.resource.data.activityType is string
+          && request.resource.data.actorEmail == request.auth.token.email
+          && request.resource.data.actorUid == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.newStatus is string
+          && request.resource.data.ownerUid is string
+          && (
+            request.resource.data.previousStatus == null
+            || request.resource.data.previousStatus is string
+          )
+          && request.resource.data.recordLabel is string
+          && request.resource.data.targetId is string
+          && request.resource.data.targetType in ["request", "registration"];
+      }
+
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
+
+      allow create: if validActivityShape()
+        && request.resource.data.createdAt == request.time
+        && (
+          (
+            request.resource.data.activityType == "request-submitted"
+            && request.resource.data.targetType == "request"
+            && hasApprovedRegistration()
+            && request.resource.data.ownerUid == request.auth.uid
+            && request.resource.data.previousStatus == null
+            && request.resource.data.newStatus == "Pending"
+            && getAfter(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.ownerUid == request.auth.uid
+            && getAfter(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.serviceName == request.resource.data.recordLabel
+            && getAfter(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.status == "Pending"
+          )
+          || (
+            isAdmin()
+            && request.resource.data.activityType == "request-status-changed"
+            && request.resource.data.targetType == "request"
+            && request.resource.data.previousStatus == get(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.status
+            && request.resource.data.newStatus == getAfter(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.status
+            && request.resource.data.ownerUid == get(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.ownerUid
+            && request.resource.data.recordLabel == get(/databases/$(database)/documents/requests/$(request.resource.data.targetId)).data.serviceName
+          )
+          || (
+            isAdmin()
+            && request.resource.data.activityType == "registration-status-changed"
+            && request.resource.data.targetType == "registration"
+            && request.resource.data.previousStatus == "Pending"
+            && request.resource.data.newStatus in ["Approved", "Rejected"]
+            && request.resource.data.ownerUid == request.resource.data.targetId
+            && request.resource.data.previousStatus == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.status
+            && request.resource.data.newStatus == getAfter(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.status
+            && (
+              request.resource.data.recordLabel == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.displayName
+              || request.resource.data.recordLabel == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.email
+            )
+          )
+          || (
+            isAdmin()
+            && request.resource.data.activityType == "student-removed"
+            && request.resource.data.targetType == "registration"
+            && request.resource.data.newStatus == "Removed"
+            && request.resource.data.ownerUid == request.resource.data.targetId
+            && request.resource.data.previousStatus == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.status
+            && !existsAfter(/databases/$(database)/documents/registrations/$(request.resource.data.targetId))
+            && (
+              request.resource.data.recordLabel == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.displayName
+              || request.resource.data.recordLabel == get(/databases/$(database)/documents/registrations/$(request.resource.data.targetId)).data.email
+            )
+          )
+        );
+
+      allow update, delete: if false;
     }
   }
 }
