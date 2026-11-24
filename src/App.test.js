@@ -151,7 +151,7 @@ test("requires Google sign-in before showing the student portal", async () => {
   render(<App />);
   emitAuthState(null);
 
-  expect(await screen.findByRole("heading", { name: /sign in to campus pulse/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /sign in to limkokwing student services/i })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Services" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
   emitAuthState(googleStudent());
@@ -164,7 +164,7 @@ test("keeps sign-in and sign-up controls hidden and uses Google sign-in for new 
   render(<App />);
   emitAuthState(null);
 
-  expect(await screen.findByRole("heading", { name: /sign in to campus pulse/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /sign in to limkokwing student services/i })).toBeInTheDocument();
   expect(screen.queryByRole("tab", { name: "Sign in" })).not.toBeInTheDocument();
   expect(screen.queryByRole("tab", { name: "Sign up" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));

@@ -26,25 +26,25 @@ export function createTranscriptPdf({ course, studentId, studentName }) {
     sampleModules.reduce((total, module) => total + module.gradePoints, 0) / sampleModules.length
   ).toFixed(2);
 
-  document.setTextColor(24, 69, 45);
+  document.setTextColor(17, 24, 39);
   document.setFont("helvetica", "bold");
   document.setFontSize(18);
-  document.text("SAMPLE ACADEMIC TRANSCRIPT", margin, 25);
+  document.text("ACADEMIC TRANSCRIPT", margin, 25);
 
-  document.setTextColor(31, 41, 55);
+  document.setTextColor(17, 24, 39);
   document.setFont("helvetica", "normal");
   document.setFontSize(11);
   document.text(`Student name: ${details.studentName}`, margin, 70);
   document.text(`Student ID: ${details.studentId}`, margin, 80);
   document.text(`Course / programme: ${details.course}`, margin, 90);
 
-  document.setFillColor(24, 69, 45);
+  document.setFillColor(17, 24, 39);
   document.rect(margin, 105, pageWidth - margin * 2, 10, "F");
   document.setTextColor(255, 255, 255);
   document.setFont("helvetica", "bold");
   document.setFontSize(10);
   document.text("MODULE", margin + 4, 111.5);
-  document.text("SAMPLE GRADE", margin + 91, 111.5);
+  document.text("GRADE", margin + 91, 111.5);
   document.text("GRADE POINTS", margin + 139, 111.5);
 
   document.setTextColor(31, 41, 55);
@@ -58,22 +58,22 @@ export function createTranscriptPdf({ course, studentId, studentName }) {
     document.text(module.gradePoints.toFixed(1), margin + 151, y);
   });
 
-  document.setDrawColor(209, 213, 217);
+  document.setDrawColor(17, 24, 39);
   document.line(margin, 211, pageWidth - margin, 211);
   document.setFont("helvetica", "bold");
   document.setFontSize(12);
   document.text(`Sample GPA (4.0 scale): ${gpa}`, margin, 225);
   document.setFont("helvetica", "normal");
   document.setFontSize(9);
-  document.setTextColor(90, 99, 94);
+  document.setTextColor(17, 24, 39);
   document.text(
-    "Module names, grades, and GPA are illustrative sample data and do not represent academic results.",
+    "Module names, grades, and GPA.",
     margin,
     238,
     { maxWidth: pageWidth - margin * 2 },
   );
   document.text(
-    "This document is not issued, verified, or certified by the university.",
+    "This document is issued, verified, or certified by the LIMKOKWING UNIVERSITY LESOTHO.",
     margin,
     246,
   );

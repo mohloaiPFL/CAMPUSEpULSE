@@ -10,7 +10,7 @@ export default function Footer() {
           <GraduationCap size={30} />
 
           <div>
-            <h3>CampusPulse</h3>
+            <h3>Limkokwing</h3>
             <p>Student Service Request Portal</p>
           </div>
         </div>

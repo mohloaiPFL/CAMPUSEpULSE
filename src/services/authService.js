@@ -74,7 +74,7 @@ export function getAuthErrorMessage(error) {
     return "Google sign-in was interrupted. Allow pop-ups for this site and try again.";
   }
   if (["unavailable", "deadline-exceeded", "auth/network-request-failed"].includes(error?.code)) {
-    return "Campus Pulse could not reach Firebase. Check your internet connection and try again.";
+    return "Limkokwing student services could not reach Firebase. Check your internet connection and try again.";
   }
   return error?.message || "Google sign-in failed. Please try again.";
 }

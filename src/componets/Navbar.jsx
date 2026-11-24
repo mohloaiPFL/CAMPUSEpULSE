@@ -15,7 +15,7 @@ export default function Navbar() {
           </div>
 
           <div>
-            <h2>Campus<span>Pulse</span></h2>
+            <h2>Camus<span>Pulse</span></h2>
             <small>STUDENT SERVICE PORTAL</small>
           </div>
         </Link>

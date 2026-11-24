@@ -19,7 +19,7 @@ export function createRecommendationLetterPdf({
   const margin = 20;
   const textWidth = pageWidth - margin * 2;
 
-  document.setFillColor(24, 69, 45);
+ // document.setFillColor(24, 69, 45);
   document.rect(0, 0, pageWidth, 39, "F");
   document.setTextColor(255, 255, 255);
   document.setFont("helvetica", "bold");
@@ -29,9 +29,9 @@ export function createRecommendationLetterPdf({
   document.text("UNIVERSITY OF CREATIVE TECHNOLOGY", margin, 24);
   document.setFont("helvetica", "normal");
   document.setFontSize(9);
-  document.text("REGISTRY | CAMPUS PULSE STUDENT SERVICES", margin, 31);
+  document.text("REGISTRY LIMKOKWING UNIVERSITY LESOTHO", margin, 31);
 
-  document.setTextColor(31, 41, 55);
+  document.setTextColor(17, 24, 39);
   document.setFontSize(10);
   document.text(new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -39,16 +39,16 @@ export function createRecommendationLetterPdf({
     year: "numeric",
   }), pageWidth - margin, 53, { align: "right" });
 
-  document.setTextColor(24, 69, 45);
+  document.setTextColor(17, 24, 39);
   document.setFont("helvetica", "bold");
   document.setFontSize(17);
   document.text("LETTER OF RECOMMENDATION", margin, 72);
   document.setDrawColor(209, 213, 217);
-  document.line(margin, 79, pageWidth - margin, 79);
+  //document.line(margin, 79, pageWidth - margin, 79);
 
   document.setTextColor(17, 24, 39);
-  document.setFontSize(11);
-  document.text("To whom it may concern,", margin, 96);
+  document.setFontSize(14);
+  document.text("To whom it may concern,", margin, 80);
 
   document.setFont("helvetica", "normal");
   document.setFontSize(11);
@@ -57,7 +57,7 @@ export function createRecommendationLetterPdf({
     "This letter is issued at the student's request following approval by the University Registry. We trust that the student's application will receive your consideration.",
     "Please contact the University Registry through its official channels if further verification is required.",
   ];
-  let y = 110;
+  let y = 90;
   paragraphs.forEach((paragraph) => {
     const lines = document.splitTextToSize(paragraph, textWidth);
     document.text(lines, margin, y);
@@ -67,16 +67,16 @@ export function createRecommendationLetterPdf({
   document.setFont("helvetica", "normal");
   document.text("Yours faithfully,", margin, y + 4);
   document.setFont("helvetica", "bold");
-  document.text("University Registry", margin, y + 20);
+  document.text("University Registry", margin, y + 10);
   document.setFont("helvetica", "normal");
-  document.setTextColor(75, 85, 99);
-  document.text("Electronically issued after administrator approval", margin, y + 27);
+  document.setTextColor(17, 24, 39);
+  document.text("Electronically issued after administrator approval", margin, y + 16);
 
-  document.setDrawColor(209, 213, 217);
+  document.setDrawColor(17, 24, 39);
   document.line(margin, 274, pageWidth - margin, 274);
   document.setFontSize(8);
   document.text(
-    "Campus Pulse | System-generated document for the approved student request",
+    "Limkokwing University lesotho, P.O. Box 111, Maseru 100, Lesotho  Tel: +266 2231 0000  Email:",
     pageWidth / 2,
     281,
     { align: "center" },

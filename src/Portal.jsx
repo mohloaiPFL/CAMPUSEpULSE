@@ -106,10 +106,9 @@ function usePortalAuth() {
 function Brand({ compact = false }) {
   return (
     <Link className={`brand${compact ? " brand-compact" : ""}`} to="/" aria-label="Limkokwing University home">
-      <span className="brand-mark"><GraduationCap size={24} strokeWidth={1.8} /></span>
+      <img alt="" className="brand-logo" src="/logo.png" />
       <span className="brand-copy">
-        <strong>Limkokwing<span>.</span></strong>
-        <small>CAMPUS PULSE</small>
+        <strong>Limkokwing</strong>
       </span>
     </Link>
   );
@@ -188,7 +187,6 @@ function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <Brand compact />
-        <p>Here for every step of your student journey.</p>
         <span>© {new Date().getFullYear()} Limkokwing University of Creative Technology</span>
       </div>
     </footer>
@@ -340,23 +338,26 @@ function Layout() {
     );
   }
 
+  // Sign-in page for visitors who have not authenticated with Google.
   if (!user) {
     return (
-      <PortalFrame>
-        <section className="access-panel">
-          <span className="access-icon"><ShieldCheck size={25} /></span>
-          <span className="eyebrow">SECURE STUDENT ACCESS</span>
-          <h1>Sign in to Campus Pulse<span>.</span></h1>
-          <p>Use your Google account to access the portal. New students can create a portal account and submit their details for university approval.</p>
-          {signInError && <div className="form-alert" role="alert"><AlertCircle size={18} />{signInError}</div>}
+      <PortalFrame
+        className="student-sign-in"
+        style={{ "--student-signin-image": `url("${process.env.PUBLIC_URL}/image/eyebrow.png")` }}
+      >
+        <section className="access-panel student-sign-in-panel">
+          <span className="eyebrow">STUDENT PORTAL</span>
+          <h1>Welcome back. Sign in to Limkokwing student services.</h1>
+          <p>Sign in with Google to explore student services, send a request, and keep track of updates. New here? Sign in first, then complete your registration for university review.</p>
+          {signInError && <div className="form-alert" role="alert">{signInError}</div>}
           <button
             className="button button-dark google-sign-in"
             onClick={handleGoogleAuth}
             type="button"
           >
-            <GoogleMark /> Continue with Google
+            Continue with Google
           </button>
-          <small>Your Google email verifies your identity. No Google password is stored by Campus Pulse.</small>
+          <small>We use Google to confirm it’s you. We never see or store your Google password.</small>
         </section>
       </PortalFrame>
     );
@@ -420,9 +421,9 @@ function Layout() {
   );
 }
 
-function PortalFrame({ children, user }) {
+function PortalFrame({ children, className = "", style, user }) {
   return (
-    <div className="app-shell">
+    <div className={`app-shell${className ? ` ${className}` : ""}`} style={style}>
       <Navbar isAdmin={false} isPortalEnabled={false} user={user} />
       <main className="main-content">{children}</main>
       <Footer />
@@ -447,8 +448,8 @@ function AdminShell({ children, user }) {
       <header className="admin-topbar">
         <div className="admin-topbar-inner">
           <div className="admin-brand">
-            <span className="admin-brand-mark"><GraduationCap size={22} /></span>
-            <span><strong>Campus Pulse</strong><small>ADMINISTRATION</small></span>
+            <img alt="" className="admin-brand-logo" src="/logo.png" />
+            <span><strong>Limkokwing</strong><small>ADMINISTRATION</small></span>
           </div>
           <div className="admin-topbar-right">
             <span className="admin-live"><i /> STAFF WORKSPACE</span>
@@ -459,7 +460,7 @@ function AdminShell({ children, user }) {
         {signOutError && <p className="admin-topbar-error" role="alert">{signOutError}</p>}
       </header>
       <main className="admin-main">{children}</main>
-      <footer className="admin-footer"><span>Campus Pulse · University Services Administration</span><span>Secure staff workspace</span></footer>
+      <Footer />
     </div>
   );
 }
@@ -477,10 +478,7 @@ function AccessMessage({ action, message, title }) {
   );
 }
 
-function GoogleMark() {
-  return <span aria-hidden="true" className="google-mark">G</span>;
-}
-
+// Collects a student's details for university review.
 function RegistrationPage({ initialRegistration, onSubmitted, user }) {
   const accountName = (user.displayName || "").trim().split(/\s+/);
   const [details, setDetails] = useState(() => ({
@@ -644,6 +642,7 @@ function RegistrationPage({ initialRegistration, onSubmitted, user }) {
   );
 }
 
+// Shows whether a student's registration is pending, approved, or rejected.
 function RegistrationStatusPage({ onEditRegistration, onRefresh, registration }) {
   const rejected = registration.status === "Rejected";
   return (
@@ -699,39 +698,48 @@ function ServiceCard({ service, index = 0 }) {
   );
 }
 
+// Home page introducing the portal and its featured student services.
 function Home() {
   return (
     <>
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <span className="hero-kicker"><span className="live-dot" /> CAMPUS PULSE HUB</span>
+            <span className="hero-kicker"><span className="live-dot" /> LIMKOKWING STUDENT SERVICES</span>
             <h1>Student services,<br /><span>made simple.</span></h1>
+
             <p className="hero-description">
               Less time in queues. More time for what matters. Request the university services
               you need, all in one place.
             </p>
+
             <div className="hero-actions">
               <Link className="button button-dark" to="/services">Explore services <ArrowRight size={17} /></Link>
               <Link className="button button-light" to="/requests">Track a request</Link>
             </div>
+
             <div className="hero-assurance">
               <span><ShieldCheck size={16} /> Secure & private</span>
               <span><Clock3 size={16} /> Available 24/7</span>
             </div>
+            
           </div>
           <div className="hero-art" aria-label="Illustration of the student service portal">
             <div className="art-orbit orbit-one" />
             <div className="art-orbit orbit-two" />
             <div className="art-sun"><Sparkles size={22} /></div>
             <div className="art-sheet">
-              <div className="art-sheet-top"><span className="art-mini-mark"><GraduationCap size={17} /></span><span>STUDENT PORTAL</span><span className="art-dots">•••</span></div>
-              <div className="art-sheet-title">What can we<br />help you with?</div>
+              <div className="art-sheet-top"><span className="art-mini-mark"><GraduationCap size={17} /></span><span>LIMKOKWING PORTAL</span><span className="art-dots">•••</span></div>
+
+              <div className="art-sheet-title">
+                What can we<br />help you with?
+                </div>
+
               <div className="art-service-row"><span className="art-row-icon art-icon-blue"><FileText size={17} /></span><span><b>Academic transcript</b><small>REGISTRY</small></span><ArrowUpRight size={16} /></div>
               <div className="art-service-row"><span className="art-row-icon art-icon-orange"><CreditCard size={17} /></span><span><b>Student ID replacement</b><small>Student Affairs</small></span><ArrowUpRight size={16} /></div>
-              <div className="art-status"><span className="status-check"><Check size={13} /></span><span><b>Request received</b><small>You’re all set — we’ll take it from here.</small></span></div>
+              <div className="art-status"><span className="status-check"><Check size={13} /></span><span><b>Request received</b><small>You're all set — we'll take it from here.</small></span></div>
             </div>
-            <div className="art-note"><span className="note-icon"><Headphones size={17} /></span><span><b>We’re here to help</b><small>Every step of the way</small></span></div>
+            <div className="art-note"><span className="note-icon"><Headphones size={17} /></span><span><b>We're here to help</b><small>Every step of the way</small></span></div>
             <span className="art-sparkle sparkle-a">✳</span>
             <span className="art-sparkle sparkle-b">✳</span>
           </div>
@@ -755,7 +763,7 @@ function Home() {
         </div>
         <div className="home-cta-strip">
           <div className="cta-emblem"><TicketCheck size={22} /></div>
-          <div><strong>Need a hand with something else?</strong><span>We’re just a few clicks away.</span></div>
+          <div><strong>Need a hand with something else?</strong><span>We're just a few clicks away.</span></div>
           <Link to="/services">Find your service <ArrowRight size={16} /></Link>
         </div>
       </section>
@@ -764,14 +772,14 @@ function Home() {
         <div className="how-inner">
           <div className="how-copy">
             <span className="eyebrow eyebrow-light">THE EASY WAY</span>
-            <h2>Three steps.<br />That’s all it takes.</h2>
+            <h2>Three steps.<br />That's all it takes.</h2>
             <p>Skip the paperwork and get back to the things you came here to do.</p>
             <Link className="how-link" to="/services">Get started <ArrowRight size={16} /></Link>
           </div>
           <div className="steps-list">
-            <div className="step-item"><span className="step-number">01</span><div><h3>Find your service</h3><p>Browse what’s available and choose what you need.</p></div><Search size={20} /></div>
+            <div className="step-item"><span className="step-number">01</span><div><h3>Find your service</h3><p>Browse what's available and choose what you need.</p></div><Search size={20} /></div>
             <div className="step-item"><span className="step-number">02</span><div><h3>Tell us a little more</h3><p>Fill in a short form so we can get right to it.</p></div><FileText size={20} /></div>
-            <div className="step-item"><span className="step-number">03</span><div><h3>We’ll take it from here</h3><p>Keep an eye on your request as it moves along.</p></div><CheckCircle2 size={20} /></div>
+            <div className="step-item"><span className="step-number">03</span><div><h3>We'll take it from here</h3><p>Keep an eye on your request as it moves along.</p></div><CheckCircle2 size={20} /></div>
           </div>
         </div>
       </section>
@@ -788,6 +796,7 @@ function ProfileDetail({ label, value }) {
   );
 }
 
+// Profile page displaying the approved student's saved details.
 function StudentProfilePage() {
   const { registration, user } = usePortalAuth();
   const studentName = registration?.displayName
@@ -802,7 +811,7 @@ function StudentProfilePage() {
       <header className="student-profile-header">
         <span aria-hidden="true" className="student-profile-avatar">{initials}</span>
         <div>
-          <span className="eyebrow">STUDENT PROFILE</span>
+          <span className="eyebrow">YOUR PROFILE</span>
           <h1>{studentName}</h1>
           <p>Approved student account · Student ID {registration?.studentId || "Not assigned"}</p>
         </div>
@@ -857,6 +866,7 @@ function StudentProfilePage() {
   );
 }
 
+// Services page listing support available through the portal.
 function ServicesPage() {
   const [search, setSearch] = useState("");
   const filteredServices = useMemo(() => services.filter((service) => (
@@ -884,11 +894,12 @@ function ServicesPage() {
       ) : (
         <div className="empty-panel"><CircleHelp size={25} /><h2>No services found</h2><p>Try a different search or browse all available services.</p><button className="text-button" onClick={() => setSearch("")} type="button">Clear search</button></div>
       )}
-      <div className="page-help"><span className="help-mark"><MessageCircle size={18} /></span><p><strong>Can’t find what you’re looking for?</strong><br />Send us a general enquiry and our team will point you in the right direction.</p><Link to="/request/enquiry">Ask us <ArrowRight size={15} /></Link></div>
+      <div className="page-help"><span className="help-mark"><MessageCircle size={18} /></span><p><strong>Can't find what you're looking for?</strong><br />Send us a general enquiry and our team will point you in the right direction.</p><Link to="/request/enquiry">Ask us <ArrowRight size={15} /></Link></div>
     </section>
   );
 }
 
+// Service details page describing one selected service.
 function ServiceDetailsPage() {
   const { id } = useParams();
   const service = services.find((item) => item.id === id);
@@ -914,6 +925,7 @@ function ServiceDetailsPage() {
   );
 }
 
+// Request page for submitting a service request.
 function RequestFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -963,7 +975,7 @@ function RequestFormPage() {
       form.serviceId === "student-id"
       && !ID_REPLACEMENT_PAYMENT_METHODS.includes(form.paymentMethod)
     ) {
-      nextErrors.paymentMethod = "Choose a demo payment method to continue.";
+      nextErrors.paymentMethod = "Choose payment method to continue.";
     }
     return nextErrors;
   }
@@ -1018,12 +1030,12 @@ function RequestFormPage() {
     <section className="page-section narrow-page request-page">
       <Link className="back-link" to={selectedService ? `/services/${selectedService.id}` : "/services"}><ArrowLeft size={16} /> {selectedService ? "Back to service" : "All services"}</Link>
       <div className="form-page-heading">
-        <span className="eyebrow">LET’S GET STARTED</span>
+        <span className="eyebrow">LET'S GET STARTED</span>
         <h1>Make a request<span>.</span></h1>
-        <p>A few details and we’ll get the right people on it.</p>
+        <p>A few details and we'll get the right people on it.</p>
       </div>
       <form className="request-form" noValidate onSubmit={handleSubmit}>
-        <div className="form-section-title"><span>01</span><div><h2>Your details</h2><p>So we know who we’re helping.</p></div></div>
+        <div className="form-section-title"><span>01</span><div><h2>Your details</h2><p>So we know who we're helping.</p></div></div>
         <div className="form-grid">
           <FormField error={errors.studentName} htmlFor="studentName" label="Full name">
             <input autoComplete="name" id="studentName" readOnly value={form.studentName} />
@@ -1047,7 +1059,7 @@ function RequestFormPage() {
           <section aria-label="Student ID replacement payment" className="payment-prototype">
             <div className="payment-prototype-heading">
               <span><CreditCard size={19} /></span>
-              <div><h3>Replacement demo fee</h3><p>M{ID_REPLACEMENT_DEMO_FEE_MALOTI} · not charged</p></div>
+              <div><h3>Replacement fee</h3><p>M{ID_REPLACEMENT_DEMO_FEE_MALOTI}</p></div>
             </div>
             <FormField error={errors.paymentMethod} htmlFor="paymentMethod" label="Payment method">
               <span className="select-wrap">
@@ -1059,7 +1071,7 @@ function RequestFormPage() {
               </span>
             </FormField>
             <p className="payment-prototype-note">
-              Prototype only: no money is moved, and no card numbers, PINs, or mobile-money credentials are collected.
+              THNK YOU
             </p>
           </section>
         )}
@@ -1108,6 +1120,7 @@ function FormField({ children, error, htmlFor, label, required = true }) {
   );
 }
 
+// Confirmation page summarizing a submitted request.
 function ConfirmationPage() {
   const location = useLocation();
   const request = location.state?.request;
@@ -1143,6 +1156,7 @@ function ConfirmationPage() {
   );
 }
 
+// Requests page where students track their submitted requests.
 function RequestsPage() {
   const { registration } = usePortalAuth();
   const { activityRecords } = useOutletContext();
@@ -1164,7 +1178,7 @@ function RequestsPage() {
       },
       (error) => {
         if (active) {
-          setLoadError(error.message || "We couldn’t load your requests.");
+          setLoadError(error.message || "We couldn't load your requests.");
           setLoading(false);
         }
       },
@@ -1173,7 +1187,7 @@ function RequestsPage() {
       else stopListening();
     }).catch((error) => {
       if (active) {
-        setLoadError(error.message || "We couldn’t load your requests.");
+        setLoadError(error.message || "We couldn't load your requests.");
         setLoading(false);
       }
     });
@@ -1185,12 +1199,12 @@ function RequestsPage() {
   }, []);
 
   async function removeRequest(request) {
-    if (!window.confirm(`Delete your ${request.serviceName} request? This can’t be undone.`)) return;
+    if (!window.confirm(`Delete your ${request.serviceName} request? This can't be undone.`)) return;
     setActionError("");
     try {
       await deleteRequest(request.id);
     } catch (error) {
-      setActionError(error.message || "We couldn’t delete this request.");
+      setActionError(error.message || "We couldn't delete this request.");
     }
   }
 
@@ -1224,12 +1238,12 @@ function RequestsPage() {
     <section className="page-section requests-page">
       <div className="page-intro requests-intro">
         <span className="eyebrow">YOUR REQUESTS</span>
-        <h1>We’re on it<span>.</span></h1>
-        <p>Keep up with the little things we’re taking care of for you.</p>
+        <h1>We're on it<span>.</span></h1>
+        <p>Keep up with the little things we're taking care of for you.</p>
       </div>
       {actionError && <div className="form-alert requests-alert" role="alert"><AlertCircle size={18} />{actionError}</div>}
       {loading ? <div className="loading-panel"><span className="loading-spinner" /> Loading your requests...</div> : null}
-      {!loading && loadError && <div className="empty-panel error-panel"><AlertCircle size={24} /><h2>We couldn’t load your requests</h2><p>{loadError}</p><Link className="button button-dark" to="/services">Browse services <ArrowRight size={16} /></Link></div>}
+      {!loading && loadError && <div className="empty-panel error-panel"><AlertCircle size={24} /><h2>We couldn't load your requests</h2><p>{loadError}</p><Link className="button button-dark" to="/services">Browse services <ArrowRight size={16} /></Link></div>}
       {!loading && !loadError && requests.length === 0 && (
         <div className="empty-panel"><span className="empty-icon"><FileText size={25} /></span><h2>Nothing on your plate. Yet.</h2><p>When you send in a request, you’ll find it here.</p><Link className="button button-dark" to="/services">Find a service <ArrowRight size={16} /></Link></div>
       )}
@@ -1278,7 +1292,7 @@ function RequestsPage() {
                 )}
                 {request.serviceId === "transcript" && request.status === "Approved" && (
                   <button className="download-letter-button" onClick={() => downloadApprovedTranscript(request)} type="button">
-                    <Download size={16} /> Download sample transcript (PDF)
+                    <Download size={16} /> Download transcript (PDF)
                   </button>
                 )}
               </div>
@@ -1295,6 +1309,7 @@ function RequestsPage() {
   );
 }
 
+// Admin password gate shown before opening the staff workspace.
 function AdminPasswordGate({ onUnlock }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -1325,20 +1340,21 @@ function AdminPasswordGate({ onUnlock }) {
                 setPassword(event.target.value);
                 setError("");
               }}
-              placeholder="Enter admin password"
+              placeholder="Enter YOUR password"
               required
               type="password"
               value={password}
             />
           </FormField>
           {error && <div className="form-alert" role="alert"><AlertCircle size={18} />{error}</div>}
-          <button className="button button-dark" type="submit">Unlock admin portal <ArrowRight size={17} /></button>
+          <button className="button button-dark" type="submit">Unlock admin PG <ArrowRight size={17} /></button>
         </form>
       </div>
     </section>
   );
 }
 
+// Admin page for reviewing registrations and managing student requests.
 function AdminPage() {
   const { isAdmin } = usePortalAuth();
   const [registrations, setRegistrations] = useState([]);
@@ -1525,7 +1541,7 @@ function AdminPage() {
     <div className="admin-dashboard">
       <section className="admin-welcome">
         <div className="admin-welcome-copy">
-          <span className="admin-kicker"><ShieldCheck size={14} /> UNIVERSITY OPERATIONS</span>
+          <span className="admin-kicker"><ShieldCheck size={14} /> LIMKOKWING UNIVERSITY OPERATIONS</span>
           <h1>Good work starts<br />with a clear overview<span>.</span></h1>
           <p>Review student registrations, manage service requests, and keep campus support moving.</p>
         </div>
@@ -1871,13 +1887,14 @@ function formatActivityDate(timestamp) {
   return date ? date.toLocaleString() : "Date not available";
 }
 
+// Not-found page shown when the URL does not match a portal route.
 function NotFoundPage() {
   return (
     <section className="page-section not-found-page">
       <span className="not-found-number">404</span>
       <span className="eyebrow">A LITTLE OFF TRACK</span>
-      <h1>This page isn’t<br />where it should be<span>.</span></h1>
-      <p>Let’s get you back to somewhere useful.</p>
+      <h1>This page isn't<br />where it should be<span>.</span></h1>
+      <p>Let's get you back to somewhere useful.</p>
       <Link className="button button-dark" to="/">Back to home <ArrowRight size={16} /></Link>
     </section>
   );
